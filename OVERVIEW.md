@@ -25,6 +25,7 @@
   └─ langchain-demo     LangChain 框架构建 Agent
   └─ langgraph-demo     LangGraph 图状态机构建 Agent
   └─ langgraph-multi-agent-demo  多 Agent 协作系统
+  └─ agentscope-demo    AgentScope 多 Agent 框架（阿里开源）
 
 阶段五：RAG 知识增强
   └─ rag-demo           检索增强生成（RAG）完整实现
@@ -269,9 +270,66 @@ END
 
 ---
 
+### 11. [agentscope-demo](./agentscope-demo/agent.py) — AgentScope 多 Agent 框架
+
+**技术点：AgentScope + Pipeline 编排 + ReAct Agent**
+
+```
+AgentScope 核心设计：
+  消息驱动（Msg）+ Pipeline 编排 + 内置 Agent 类型
+
+编排方式：
+  sequentialpipeline  → 顺序执行（A → B → C）
+  ifelsepipeline      → 条件分支（if 条件 then A else B）
+  whilelooppipeline   → 循环执行
+  parallelpipeline    → 并行执行
+```
+
+| 概念 | 说明 | 类比 |
+|------|------|------|
+| `Msg` | Agent 间通信的消息对象 | LangGraph 的 State |
+| `DialogAgent` | 基本对话 Agent | LangChain 的 ChatModel |
+| `ReActAgent` | 带工具的推理 Agent | LangGraph 的 agent+tools 循环 |
+| `Pipeline` | Agent 编排方式 | LangGraph 的 Graph |
+| `ServiceToolkit` | 工具注册管理 | MCP 的 @tool 装饰器 |
+
+**四个 Demo 场景：**
+
+| Demo | 内容 | 验证点 |
+|------|------|--------|
+| Demo 1 | 基本对话 Agent | 最简 Agent 创建与消息交互 |
+| Demo 2 | ReAct Agent | 工具调用 + 思考-行动-观察循环 |
+| Demo 3 | 多 Agent Pipeline | 翻译→润色→审核 流水线协作 |
+| Demo 4 | 条件分支 Pipeline | 根据问题类型路由到不同 Agent |
+
+**学到什么：**
+- AgentScope 的消息驱动设计（一切通信基于 `Msg` 对象）
+- Pipeline 编排比 Graph 更直观（Python 函数式风格）
+- `ReActAgent` 内置了完整的 Agentic Loop（无需手写）
+- 与 LangGraph 的核心区别：Pipeline 函数式 vs Graph 图结构
+
+**AgentScope vs LangGraph 对比：**
+
+| 特性 | AgentScope | LangGraph |
+|------|-----------|-----------|
+| 编排方式 | Pipeline 函数式 | Graph 图结构 |
+| 学习曲线 | 较低（Python 函数风格） | 中等（需理解图概念） |
+| 多 Agent 通信 | 消息传递（Msg） | 共享状态（State） |
+| 条件路由 | `ifelsepipeline` | `conditional_edges` |
+| 并行执行 | `parallelpipeline` | `Send()` API |
+| 分布式 | 原生支持 | 需额外配置 |
+| 生态 | 阿里系 | LangChain 生态 |
+
+**参考链接：**
+- [AgentScope GitHub](https://github.com/modelscope/agentscope)
+- [AgentScope 官方文档](https://modelscope.github.io/agentscope/)
+- [AgentScope 论文](https://arxiv.org/abs/2402.14034)
+
+---
+
 ## 阶段五：RAG 知识增强
 
-### 11. [rag-demo](./rag-demo/rag.py) — 检索增强生成
+### 12. [rag-demo](./rag-demo/rag.py) — 检索增强生成
 
 **技术点：Embedding + 向量数据库 + RAG 链**
 
@@ -319,7 +377,8 @@ END
 | 权限控制与沙箱 | harness-demo, stdio-filesystem | ⭐⭐⭐ |
 | LangChain 框架 | langchain-demo | ⭐⭐⭐⭐ |
 | LangGraph 图状态机 | langgraph-demo, langgraph-multi-agent-demo | ⭐⭐⭐⭐⭐ |
-| 多 Agent 协作 | langgraph-multi-agent-demo | ⭐⭐⭐⭐ |
+| 多 Agent 协作 | langgraph-multi-agent-demo, agentscope-demo | ⭐⭐⭐⭐ |
+| Pipeline 编排 | agentscope-demo | ⭐⭐⭐⭐ |
 | Embedding 向量化 | rag-demo | ⭐⭐⭐⭐⭐ |
 | 向量数据库（Chroma） | rag-demo | ⭐⭐⭐⭐ |
 | RAG 检索增强生成 | rag-demo | ⭐⭐⭐⭐⭐ |
@@ -340,6 +399,7 @@ END
 | langchain-demo | LangChain 1.x | ~200 行 | ⭐⭐ | 初级 |
 | langgraph-demo | LangGraph | ~250 行 | ⭐⭐⭐ | 中级 |
 | langgraph-multi-agent-demo | LangGraph | ~450 行 | ⭐⭐⭐⭐ | 进阶 |
+| agentscope-demo | AgentScope | ~300 行 | ⭐⭐⭐ | 中级 |
 | rag-demo | LangChain + Chroma | ~200 行 | ⭐⭐⭐ | 中级 |
 
 ---
@@ -359,12 +419,12 @@ simple-agent-demo → harness-demo → langchain-demo → langgraph-demo
 ### 路径 C：完整 AI 应用开发（1周）
 ```
 http-demo → stdio-demo → simple-agent-demo → langchain-demo
-→ langgraph-demo → langgraph-multi-agent-demo → rag-demo
+→ langgraph-demo → langgraph-multi-agent-demo → agentscope-demo → rag-demo
 ```
 
 ---
 
-*最后更新：2026-06-11*
+*最后更新：2026-06-12*
 
 ---
 
@@ -503,6 +563,17 @@ cd rag-demo
 python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 python rag.py
+```
+
+---
+
+### agentscope-demo
+
+```bash
+cd agentscope-demo
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+python agent.py
 ```
 
 ---
